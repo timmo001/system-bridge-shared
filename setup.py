@@ -14,11 +14,11 @@ with io.open("requirements.txt", encoding="utf-8") as f:
 setup(
     name="systembridgeshared",
     description="System Bridge Shared",
-    keywords="system bridge shared",
+    keywords="system-bridge",
     author="Aidan Timson (Timmo)",
     author_email="aidan@timmo.dev",
     license="MIT",
-    url="https://github.com/timmo001/system-bridge",
+    url="https://github.com/timmo001/system-bridge-shared",
     packages=find_packages(exclude=["tests", "generator"]),
     install_requires=requirements,
     setup_requires=requirements_setup,
