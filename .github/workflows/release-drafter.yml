@@ -10,6 +10,6 @@ on:
 
 jobs:
   release-drafter:
-    uses: timmo001/workflows/.github/workflows/release-drafter-python.yml@master
+    uses: timmo001/workflows/.github/workflows/release-drafter.yml@master
     secrets:
       PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }}
