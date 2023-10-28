@@ -8,10 +8,7 @@ from typing import Any, Optional, Union
 
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
-
-from .base import Base
-from .common import convert_string_to_correct_type, get_user_data_directory
-from .const import (
+from systembridgemodels.const import (
     MODEL_BATTERY,
     MODEL_CPU,
     MODEL_DISK,
@@ -25,8 +22,8 @@ from .const import (
     MODEL_SETTINGS,
     MODEL_SYSTEM,
 )
-from .models.data import DataDict
-from .models.database_data import (
+from systembridgemodels.data import DataDict
+from systembridgemodels.database_data import (
     CPU,
     GPU,
     Battery,
@@ -40,8 +37,11 @@ from .models.database_data import (
     Settings,
     System,
 )
-from .models.database_data_remote_bridge import RemoteBridge
-from .models.database_data_sensors import Sensors
+from systembridgemodels.database_data_remote_bridge import RemoteBridge
+from systembridgemodels.database_data_sensors import Sensors
+
+from .base import Base
+from .common import convert_string_to_correct_type, get_user_data_directory
 
 TABLE_MAP: Mapping[str, Any] = {
     MODEL_BATTERY: Battery,

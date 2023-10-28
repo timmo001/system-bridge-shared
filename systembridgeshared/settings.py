@@ -9,6 +9,9 @@ from uuid import uuid4
 
 from appdirs import AppDirs
 from cryptography.fernet import Fernet
+from systembridgemodels.database_data import Data as DatabaseData
+from systembridgemodels.database_data import Secrets as DatabaseSecrets
+from systembridgemodels.database_data import Settings as DatabaseSettings
 
 from .base import Base
 from .common import convert_string_to_correct_type
@@ -21,9 +24,6 @@ from .const import (
     SETTING_PORT_API,
 )
 from .database import Database
-from .models.database_data import Data as DatabaseData
-from .models.database_data import Secrets as DatabaseSecrets
-from .models.database_data import Settings as DatabaseSettings
 
 
 class Settings(Base):
