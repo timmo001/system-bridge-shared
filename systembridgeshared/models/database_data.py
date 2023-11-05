@@ -47,6 +47,10 @@ class Network(Data, table=True):
     """Database Data Network"""
 
 
+class Processes(Data, table=True):
+    """Database Data Processes"""
+
+
 class Secrets(Data, table=True):
     """Database Data Secrets"""
 
