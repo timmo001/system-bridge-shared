@@ -17,13 +17,19 @@ from systembridgemodels.const import (
     MODEL_MEDIA,
     MODEL_MEMORY,
     MODEL_NETWORK,
+    MODEL_PROCESSES,
     MODEL_SECRETS,
     MODEL_SENSORS,
     MODEL_SETTINGS,
     MODEL_SYSTEM,
 )
 from systembridgemodels.data import DataDict
-from systembridgeshared.models.database_data import (
+from systembridgeshared.models.database_data_remote_bridge import RemoteBridge
+from systembridgeshared.models.database_data_sensors import Sensors
+
+from .base import Base
+from .common import convert_string_to_correct_type, get_user_data_directory
+from .models.database_data import (
     CPU,
     GPU,
     Battery,
@@ -33,15 +39,11 @@ from systembridgeshared.models.database_data import (
     Media,
     Memory,
     Network,
+    Processes,
     Secrets,
     Settings,
     System,
 )
-from systembridgeshared.models.database_data_remote_bridge import RemoteBridge
-from systembridgeshared.models.database_data_sensors import Sensors
-
-from .base import Base
-from .common import convert_string_to_correct_type, get_user_data_directory
 
 TABLE_MAP: Mapping[str, Any] = {
     MODEL_BATTERY: Battery,
@@ -52,6 +54,7 @@ TABLE_MAP: Mapping[str, Any] = {
     MODEL_MEDIA: Media,
     MODEL_MEMORY: Memory,
     MODEL_NETWORK: Network,
+    MODEL_PROCESSES: Processes,
     MODEL_SECRETS: Secrets,
     MODEL_SENSORS: Sensors,
     MODEL_SETTINGS: Settings,
@@ -68,6 +71,7 @@ TableDataType = Union[
     Media,
     Memory,
     Network,
+    Processes,
     RemoteBridge,
     Secrets,
     Sensors,
