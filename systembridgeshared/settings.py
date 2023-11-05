@@ -9,9 +9,9 @@ from uuid import uuid4
 
 from appdirs import AppDirs
 from cryptography.fernet import Fernet
-from systembridgemodels.database_data import Data as DatabaseData
-from systembridgemodels.database_data import Secrets as DatabaseSecrets
-from systembridgemodels.database_data import Settings as DatabaseSettings
+from systembridgeshared.models.database_data import Data as DatabaseData
+from systembridgeshared.models.database_data import Secrets as DatabaseSecrets
+from systembridgeshared.models.database_data import Settings as DatabaseSettings
 
 from .base import Base
 from .common import convert_string_to_correct_type

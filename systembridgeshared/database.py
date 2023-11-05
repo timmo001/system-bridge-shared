@@ -23,7 +23,7 @@ from systembridgemodels.const import (
     MODEL_SYSTEM,
 )
 from systembridgemodels.data import DataDict
-from systembridgemodels.database_data import (
+from systembridgeshared.models.database_data import (
     CPU,
     GPU,
     Battery,
@@ -37,8 +37,8 @@ from systembridgemodels.database_data import (
     Settings,
     System,
 )
-from systembridgemodels.database_data_remote_bridge import RemoteBridge
-from systembridgemodels.database_data_sensors import Sensors
+from systembridgeshared.models.database_data_remote_bridge import RemoteBridge
+from systembridgeshared.models.database_data_sensors import Sensors
 
 from .base import Base
 from .common import convert_string_to_correct_type, get_user_data_directory
