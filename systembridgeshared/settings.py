@@ -1,10 +1,9 @@
 """System Bridge: Settings"""
 from __future__ import annotations
 
-import io
 import os
 from os.path import exists
-from typing import Any, Union
+from typing import Any
 from uuid import uuid4
 
 from appdirs import AppDirs
@@ -43,11 +42,11 @@ class Settings(Base):
             AppDirs("systembridge", "timmo001").user_data_dir, "secret.key"
         )
         if exists(secret_key_path):
-            with io.open(secret_key_path, encoding="utf-8") as file:
+            with open(secret_key_path, encoding="utf-8") as file:
                 self._encryption_key = file.read().splitlines()[0]
         if not self._encryption_key:
             self._encryption_key = Fernet.generate_key().decode()
-            with io.open(secret_key_path, "w", encoding="utf-8") as file:
+            with open(secret_key_path, "w", encoding="utf-8") as file:
                 file.write(self._encryption_key)
 
         # Default Secrets
@@ -96,7 +95,7 @@ class Settings(Base):
     def get(
         self,
         key: str,
-    ) -> Union[bool, float, int, str, list[Any], dict[str, Any], None]:
+    ) -> bool | float | int | str | list[Any] | dict[str, Any] | None:
         """Get setting"""
         record = self._database.get_data_item_by_key(DatabaseSettings, key)
         if record is None or record.value is None:

@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 from collections.abc import Mapping
 from time import time
-from typing import Any, Optional, Union
+from typing import Any
 
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
@@ -62,22 +62,22 @@ TABLE_MAP: Mapping[str, Any] = {
 }
 
 
-TableDataType = Union[
-    Battery,
-    CPU,
-    Disk,
-    Display,
-    GPU,
-    Media,
-    Memory,
-    Network,
-    Processes,
-    RemoteBridge,
-    Secrets,
-    Sensors,
-    Settings,
-    System,
-]
+TableDataType = (
+    Battery
+    | CPU
+    | Disk
+    | Display
+    | GPU
+    | Media
+    | Memory
+    | Network
+    | Processes
+    | RemoteBridge
+    | Secrets
+    | Sensors
+    | Settings
+    | System
+)
 
 
 SelectOfScalar.inherit_cache = True  # type: ignore
@@ -129,7 +129,7 @@ class Database(Base):
         self,
         table: Any,
         key: str,
-    ) -> Optional[Data]:
+    ) -> Data | None:
         """Get data item from database by key"""
         with Session(self._engine, autoflush=True) as session:
             return session.exec(select(table).where(table.key == key)).first()

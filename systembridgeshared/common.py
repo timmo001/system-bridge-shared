@@ -5,7 +5,7 @@ import asyncio
 import json
 import os
 import re
-from typing import Any, Union
+from typing import Any
 
 from appdirs import AppDirs
 
@@ -27,7 +27,7 @@ def camel_to_snake(name):
 
 def convert_string_to_correct_type(
     value: str | None,
-) -> Union[bool, float, int, str, list[Any], dict[str, Any], None]:
+) -> bool | float | int | str | list[Any] | dict[str, Any] | None:
     """Convert string to correct data type"""
     if value is None:
         return None

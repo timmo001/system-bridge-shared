@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from collections.abc import Awaitable, Callable
-from typing import Any, Optional
+from typing import Any
 from uuid import uuid4
 
 import aiohttp
@@ -80,9 +80,9 @@ class WebSocketClient(Base):
         """Initialize"""
         super().__init__()
         self._settings = settings
-        self._responses: dict[str, tuple[asyncio.Future[Response], Optional[str]]] = {}
-        self._session: Optional[aiohttp.ClientSession] = None
-        self._websocket: Optional[aiohttp.ClientWebSocketResponse] = None
+        self._responses: dict[str, tuple[asyncio.Future[Response], str | None]] = {}
+        self._session: aiohttp.ClientSession | None = None
+        self._websocket: aiohttp.ClientWebSocketResponse | None = None
         self._api_key = self._settings.get_secret(SECRET_API_KEY)
 
     @property
@@ -94,7 +94,7 @@ class WebSocketClient(Base):
         self,
         request: Request,
         wait_for_response: bool = True,
-        response_type: Optional[str] = None,
+        response_type: str | None = None,
     ) -> Response:
         """Send a message to the WebSocket"""
         if not self.connected or self._websocket is None:
@@ -130,7 +130,7 @@ class WebSocketClient(Base):
 
     async def connect(
         self,
-        session: Optional[aiohttp.ClientSession] = None,
+        session: aiohttp.ClientSession | None = None,
     ) -> None:
         """Connect to server"""
         if session:
@@ -420,7 +420,7 @@ class WebSocketClient(Base):
 
     async def listen(
         self,
-        callback: Optional[Callable[[str, Any], Awaitable[None]]] = None,
+        callback: Callable[[str, Any], Awaitable[None]] | None = None,
         accept_other_types: bool = False,
     ) -> None:
         """Listen for messages and map to modules"""
@@ -528,7 +528,7 @@ class WebSocketClient(Base):
                 if isinstance(message, dict):
                     await callback(message)
 
-    async def receive_message(self) -> Optional[dict]:
+    async def receive_message(self) -> dict | None:
         """Receive message"""
         if not self.connected or self._websocket is None:
             raise ConnectionClosedException("Connection is closed")

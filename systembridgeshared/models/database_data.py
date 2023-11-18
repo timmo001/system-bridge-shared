@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from sqlmodel import Field, SQLModel
 
 
@@ -11,8 +9,8 @@ class Data(SQLModel):
     """Database Data"""
 
     key: str = Field(primary_key=True, nullable=False)
-    value: Optional[str] = Field(default=None, nullable=True)
-    timestamp: Optional[float] = Field(default=None, nullable=True)
+    value: str | None = Field(default=None, nullable=True)
+    timestamp: float | None = Field(default=None, nullable=True)
 
 
 class Battery(Data, table=True):
