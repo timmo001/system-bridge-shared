@@ -24,7 +24,6 @@ from systembridgemodels.const import (
     MODEL_SYSTEM,
 )
 from systembridgemodels.data import DataDict
-
 from systembridgeshared.models.database_data_remote_bridge import RemoteBridge
 from systembridgeshared.models.database_data_sensors import Sensors
 
@@ -63,22 +62,22 @@ TABLE_MAP: Mapping[str, Any] = {
 }
 
 
-TableDataType = Union[
-    Battery,
-    CPU,
-    Disk,
-    Display,
-    GPU,
-    Media,
-    Memory,
-    Network,
-    Processes,
-    RemoteBridge,
-    Secrets,
-    Sensors,
-    Settings,
-    System,
-]
+TableDataType = (
+    Battery
+    | CPU
+    | Disk
+    | Display
+    | GPU
+    | Media
+    | Memory
+    | Network
+    | Processes
+    | RemoteBridge
+    | Secrets
+    | Sensors
+    | Settings
+    | System
+)
 
 
 SelectOfScalar.inherit_cache = True  # type: ignore
