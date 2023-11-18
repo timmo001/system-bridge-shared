@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from sqlmodel import Field, SQLModel
 
 
@@ -15,4 +13,4 @@ class RemoteBridge(SQLModel, table=True):
     host: str = Field(default=None, nullable=False)
     port: str = Field(default=9170, nullable=False)
     api_key: str = Field(nullable=False)
-    timestamp: Optional[float] = Field(default=None, nullable=True)
+    timestamp: float | None = Field(default=None, nullable=True)

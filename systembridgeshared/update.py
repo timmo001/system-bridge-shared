@@ -8,7 +8,6 @@ import subprocess
 import sys
 import urllib.request
 from json import loads
-from typing import Optional
 
 from .base import Base
 from .common import asyncio_get_loop
@@ -34,7 +33,7 @@ class Update(Base):
             result = pipe.communicate()[0].decode()
         self._logger.info("Result: %s", result)
 
-    def _update(self, packages: dict[str, Optional[str]]) -> None:
+    def _update(self, packages: dict[str, str | None]) -> None:
         """Update each package."""
         for package, version in packages.items():
             self._logger.info("Updating %s to version %s", package, version)
@@ -51,9 +50,9 @@ class Update(Base):
 
     def update(
         self,
-        version: Optional[str],
+        version: str | None,
         wait: bool = False,
-    ) -> dict[str, Optional[str]]:
+    ) -> dict[str, str | None]:
         """Update the application."""
         packages = {
             "systembridgeshared": version,

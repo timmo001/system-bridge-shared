@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 from collections.abc import Mapping
 from time import time
-from typing import Any, Optional, Union
+from typing import Any
 
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
@@ -24,6 +24,7 @@ from systembridgemodels.const import (
     MODEL_SYSTEM,
 )
 from systembridgemodels.data import DataDict
+
 from systembridgeshared.models.database_data_remote_bridge import RemoteBridge
 from systembridgeshared.models.database_data_sensors import Sensors
 
@@ -129,7 +130,7 @@ class Database(Base):
         self,
         table: Any,
         key: str,
-    ) -> Optional[Data]:
+    ) -> Data | None:
         """Get data item from database by key"""
         with Session(self._engine, autoflush=True) as session:
             return session.exec(select(table).where(table.key == key)).first()
