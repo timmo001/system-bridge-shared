@@ -9,6 +9,7 @@ from typing import Any
 
 from appdirs import AppDirs
 from cryptography.fernet import Fernet
+from systembridgemodels.settings import SettingDirectory, SettingHotkey
 from systembridgemodels.settings import Settings as SettingsModel
 from systembridgemodels.settings import SettingsAPI, SettingsMedia
 
@@ -40,11 +41,22 @@ class Settings(Base):
         if exists(self.settings_path):
             with open(self.settings_path, encoding="utf-8") as file:
                 settings_dict = loads(file.read())
-                self._settings = SettingsModel(
-                    **settings_dict,
-                    api=SettingsAPI(**settings_dict["api"]),
-                    media=SettingsMedia(**settings_dict["media"]),
-                )
+
+            self._settings = SettingsModel(
+                api=SettingsAPI(**settings_dict["api"]),
+                autostart=settings_dict["autostart"],
+                keyboard_hotkeys=[
+                    SettingHotkey(**hotkey)
+                    for hotkey in settings_dict["keyboard_hotkeys"]
+                ],
+                log_level=settings_dict["log_level"],
+                media=SettingsMedia(
+                    directories=[
+                        SettingDirectory(**directory)
+                        for directory in settings_dict["media"]["directories"]
+                    ]
+                ),
+            )
         if self._settings is None:
             self._settings = SettingsModel()
             self._save()
