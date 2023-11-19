@@ -10,6 +10,7 @@ from typing import Any
 from appdirs import AppDirs
 from cryptography.fernet import Fernet
 from systembridgemodels.settings import Settings as SettingsModel
+from systembridgemodels.settings import SettingsAPI, SettingsMedia
 
 from .base import Base
 
@@ -38,7 +39,12 @@ class Settings(Base):
         self._settings: SettingsModel
         if exists(self.settings_path):
             with open(self.settings_path, encoding="utf-8") as file:
-                self._settings = SettingsModel(loads(file.read()))
+                settings_dict = loads(file.read())
+                self._settings = SettingsModel(
+                    **settings_dict,
+                    api=SettingsAPI(**settings_dict["api"]),
+                    media=SettingsMedia(**settings_dict["media"]),
+                )
         if self._settings is None:
             self._settings = SettingsModel()
             self._save()
@@ -46,6 +52,7 @@ class Settings(Base):
     def _save(self) -> None:
         """Save settings to file"""
         with open(self.settings_path, "w", encoding="utf-8") as file:
+            # TODO: Encrypt settings
             file.write(dumps(asdict(self._settings)))
 
     @property
