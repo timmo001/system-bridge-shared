@@ -30,7 +30,7 @@ SETTING_PORT_API = "port_api"
 SECRET_TOKEN = "token"
 
 # Headers
-HEADER_TOKEN = "api-key"
+HEADER_TOKEN = "token"
 
 # Query Parameters
 QUERY_ALBUM = "album"
@@ -46,7 +46,7 @@ QUERY_URL = "url"
 QUERY_VOLUME = "volume"
 
 # Event Keys
-EVENT_TOKEN = "api-key"
+EVENT_TOKEN = "token"
 EVENT_APP_ICON = "app_icon"
 EVENT_APP_NAME = "app_name"
 EVENT_BASE = "base"
