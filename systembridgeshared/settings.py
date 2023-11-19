@@ -37,12 +37,12 @@ class Settings(Base):
                 file.write(self._encryption_key)
 
         # Create or read settings file
-        self._settings: SettingsModel
+        settings: SettingsModel | None = None
         if exists(self.settings_path):
             with open(self.settings_path, encoding="utf-8") as file:
                 settings_dict = loads(file.read())
 
-            self._settings = SettingsModel(
+            settings = SettingsModel(
                 api=SettingsAPI(**settings_dict["api"]),
                 autostart=settings_dict["autostart"],
                 keyboard_hotkeys=[
@@ -57,9 +57,11 @@ class Settings(Base):
                     ]
                 ),
             )
-        if self._settings is None:
-            self._settings = SettingsModel()
+        if settings is None:
+            settings = SettingsModel()
             self._save()
+
+        self._settings: SettingsModel = settings
 
     def _save(self) -> None:
         """Save settings to file"""
