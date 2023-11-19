@@ -35,6 +35,7 @@ class Settings(Base):
                 file.write(self._encryption_key)
 
         # Create or read settings file
+        self._settings: SettingsModel
         if exists(self.settings_path):
             with open(self.settings_path, encoding="utf-8") as file:
                 self._settings = SettingsModel(loads(file.read()))
