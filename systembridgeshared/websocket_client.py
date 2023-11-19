@@ -35,9 +35,9 @@ from .const import (
     EVENT_MODULE,
     EVENT_SUBTYPE,
     EVENT_TYPE,
-    SECRET_API_KEY,
+    SECRET_TOKEN,
     SETTING_PORT_API,
-    SUBTYPE_BAD_API_KEY,
+    SUBTYPE_BAD_TOKEN,
     SUBTYPE_LISTENER_ALREADY_REGISTERED,
     TYPE_APPLICATION_UPDATE,
     TYPE_DATA_UPDATE,
@@ -82,7 +82,7 @@ class WebSocketClient(Base):
         self._responses: dict[str, tuple[asyncio.Future[Response], str | None]] = {}
         self._session: aiohttp.ClientSession | None = None
         self._websocket: aiohttp.ClientWebSocketResponse | None = None
-        self._api_key = self._settings.get_secret(SECRET_API_KEY)
+        self._token = self._settings.get_secret(SECRET_TOKEN)
 
     @property
     def connected(self) -> bool:
@@ -101,7 +101,7 @@ class WebSocketClient(Base):
             raise ConnectionClosedException("Connection is closed")
 
         request = Request(
-            api_key=self._api_key,
+            token=self._token,
             id=uuid4().hex,
             event=event,
             data=data,
@@ -488,7 +488,7 @@ class WebSocketClient(Base):
 
             if (
                 message_json[EVENT_TYPE] == TYPE_ERROR
-                and message_json[EVENT_SUBTYPE] == SUBTYPE_BAD_API_KEY
+                and message_json[EVENT_SUBTYPE] == SUBTYPE_BAD_TOKEN
             ):
                 raise AuthenticationException(message_json[EVENT_MESSAGE])
 
