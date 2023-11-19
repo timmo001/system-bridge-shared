@@ -6,78 +6,37 @@ from collections.abc import Mapping
 from time import time
 from typing import Any
 
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import Field, Session, SQLModel, create_engine, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
-from systembridgemodels.const import (
-    MODEL_BATTERY,
-    MODEL_CPU,
-    MODEL_DISK,
-    MODEL_DISPLAY,
-    MODEL_GPU,
-    MODEL_MEDIA,
-    MODEL_MEMORY,
-    MODEL_NETWORK,
-    MODEL_PROCESSES,
-    MODEL_SECRETS,
-    MODEL_SENSORS,
-    MODEL_SETTINGS,
-    MODEL_SYSTEM,
-)
-from systembridgemodels.data import DataDict
-from systembridgeshared.models.database_data_remote_bridge import RemoteBridge
-from systembridgeshared.models.database_data_sensors import Sensors
 
 from .base import Base
 from .common import convert_string_to_correct_type, get_user_data_directory
-from .models.database_data import (
-    CPU,
-    GPU,
-    Battery,
-    Data,
-    Disk,
-    Display,
-    Media,
-    Memory,
-    Network,
-    Processes,
-    Secrets,
-    Settings,
-    System,
-)
+from .const import MODEL_SECRETS, MODEL_SETTINGS
+
+
+class Data(SQLModel):
+    """Database Data"""
+
+    key: str = Field(primary_key=True, nullable=False)
+    value: str | None = Field(default=None, nullable=True)
+    timestamp: float | None = Field(default=None, nullable=True)
+
+
+class Secrets(Data, table=True):
+    """Database Data Secrets"""
+
+
+class Settings(Data, table=True):
+    """Database Data Settings"""
+
 
 TABLE_MAP: Mapping[str, Any] = {
-    MODEL_BATTERY: Battery,
-    MODEL_CPU: CPU,
-    MODEL_DISK: Disk,
-    MODEL_DISPLAY: Display,
-    MODEL_GPU: GPU,
-    MODEL_MEDIA: Media,
-    MODEL_MEMORY: Memory,
-    MODEL_NETWORK: Network,
-    MODEL_PROCESSES: Processes,
     MODEL_SECRETS: Secrets,
-    MODEL_SENSORS: Sensors,
     MODEL_SETTINGS: Settings,
-    MODEL_SYSTEM: System,
 }
 
 
-TableDataType = (
-    Battery
-    | CPU
-    | Disk
-    | Display
-    | GPU
-    | Media
-    | Memory
-    | Network
-    | Processes
-    | RemoteBridge
-    | Secrets
-    | Sensors
-    | Settings
-    | System
-)
+type TableDataType = Secrets | Settings
 
 
 SelectOfScalar.inherit_cache = True  # type: ignore
@@ -137,7 +96,7 @@ class Database(Base):
     def get_data_dict(
         self,
         table: Any,
-    ) -> DataDict:
+    ) -> dict[str, Any]:
         """Get data from database as dictionary"""
         data: dict[str, Any] = {}
         data_last_updated: dict[str, float | None] = {}
@@ -152,7 +111,10 @@ class Database(Base):
             else:
                 data_last_updated[item.key] = item.timestamp
 
-        return DataDict(**data, last_updated=data_last_updated)
+        return {
+            **data,
+            "last_updated": data_last_updated,
+        }
 
     def update_data(
         self,
@@ -172,39 +134,3 @@ class Database(Base):
             session.commit()
             if old_data is not None:
                 session.refresh(old_data)
-
-    def delete_remote_bridge(
-        self,
-        key: str,
-    ) -> None:
-        """Delete remote bridge"""
-        with Session(self._engine, autoflush=True) as session:
-            result = session.exec(select(RemoteBridge).where(RemoteBridge.key == key))
-            if (data := result.first()) is not None:
-                session.delete(data)
-                session.commit()
-
-    def update_remote_bridge(
-        self,
-        data: RemoteBridge,
-    ) -> RemoteBridge:
-        """Update remote bridge"""
-        with Session(self._engine, autoflush=True) as session:
-            result = session.exec(
-                select(RemoteBridge).where(RemoteBridge.key == data.key)
-            )
-            if (old_data := result.first()) is None:
-                data.timestamp = time()
-                session.add(data)
-            else:
-                old_data.name = data.name
-                old_data.host = data.host
-                old_data.port = data.port
-                old_data.api_key = data.api_key
-                old_data.timestamp = time()
-                session.add(old_data)
-            session.commit()
-            if old_data is not None:
-                session.refresh(old_data)
-                return old_data
-            return data

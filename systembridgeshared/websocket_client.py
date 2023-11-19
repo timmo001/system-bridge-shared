@@ -4,6 +4,8 @@ from __future__ import annotations
 import asyncio
 import socket
 from collections.abc import Awaitable, Callable
+from dataclasses import asdict
+from json import dumps
 from typing import Any
 from uuid import uuid4
 
@@ -14,8 +16,7 @@ from systembridgemodels.keyboard_key import KeyboardKey
 from systembridgemodels.keyboard_text import KeyboardText
 from systembridgemodels.media_control import MediaControl
 from systembridgemodels.media_directories import MediaDirectories
-from systembridgemodels.media_files import File as MediaFile
-from systembridgemodels.media_files import MediaFiles
+from systembridgemodels.media_files import MediaFile, MediaFiles
 from systembridgemodels.media_get_file import MediaGetFile
 from systembridgemodels.media_get_files import MediaGetFiles
 from systembridgemodels.notification import Notification
@@ -28,9 +29,7 @@ from systembridgemodels.update import Update
 
 from .base import Base
 from .const import (
-    EVENT_API_KEY,
     EVENT_DATA,
-    EVENT_EVENT,
     EVENT_ID,
     EVENT_MESSAGE,
     EVENT_MODULE,
@@ -92,7 +91,8 @@ class WebSocketClient(Base):
 
     async def _send_message(
         self,
-        request: Request,
+        event: str,
+        data: dict[str, Any],
         wait_for_response: bool = True,
         response_type: str | None = None,
     ) -> Response:
@@ -100,12 +100,19 @@ class WebSocketClient(Base):
         if not self.connected or self._websocket is None:
             raise ConnectionClosedException("Connection is closed")
 
-        request.api_key = self._api_key
-        request.id = uuid4().hex
+        request = Request(
+            api_key=self._api_key,
+            id=uuid4().hex,
+            event=event,
+            data=data,
+        )
+
         future: asyncio.Future[Response] = asyncio.get_running_loop().create_future()
         self._responses[request.id] = future, response_type
-        await self._websocket.send_str(request.json())
-        self._logger.debug("Sent message: %s", request.json(exclude={EVENT_API_KEY}))
+        ws_data = dumps(asdict(request))
+        await self._websocket.send_str(ws_data)
+        self._logger.debug("Sent message: %s", ws_data)
+
         if wait_for_response:
             try:
                 return await future
@@ -117,7 +124,7 @@ class WebSocketClient(Base):
             message="Message sent",
             subtype=None,
             module=None,
-            data=None,
+            data={},
         )
 
     async def close(self) -> None:
@@ -166,12 +173,8 @@ class WebSocketClient(Base):
         """Update application"""
         self._logger.info("Updating application")
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_APPLICATION_UPDATE,
-                    **model.dict(),
-                }
-            ),
+            TYPE_APPLICATION_UPDATE,
+            asdict(model),
             wait_for_response=False,
         )
 
@@ -179,11 +182,8 @@ class WebSocketClient(Base):
         """Exit backend"""
         self._logger.info("Exiting backend")
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_EXIT_APPLICATION,
-                }
-            ),
+            TYPE_EXIT_APPLICATION,
+            {},
             wait_for_response=False,
         )
 
@@ -192,74 +192,62 @@ class WebSocketClient(Base):
         model: GetData,
     ) -> Response:
         """Get data from server"""
-        self._logger.info("Getting data from server: %s", model.json())
+        self._logger.info("Getting data from server: %s", model)
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_GET_DATA,
-                    **model.dict(),
-                }
-            ),
+            TYPE_GET_DATA,
+            asdict(model),
             response_type=TYPE_DATA_UPDATE,
         )
 
     async def get_directories(self) -> MediaDirectories:
         """Get directories"""
-        self._logger.info("Getting directories:")
+        self._logger.info("Getting directories..")
         response = await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_GET_DIRECTORIES,
-                }
-            )
+            TYPE_GET_DIRECTORIES,
+            {},
         )
-        return MediaDirectories(**response.dict())
+        # return MediaDirectories(**response.dict())
+        return MediaDirectories(*response.data)
 
     async def get_files(
         self,
         model: MediaGetFiles,
     ) -> MediaFiles:
         """Get files"""
-        self._logger.info("Getting files: %s", model.json())
+        self._logger.info("Getting files: %s", model)
         response = await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_GET_FILES,
-                    **model.dict(),
-                }
-            )
+            TYPE_GET_FILES,
+            asdict(model),
         )
-        return MediaFiles(**response.dict())
+
+        files = response.data.get("files")
+        path = response.data.get("path")
+        return MediaFiles(
+            files=files if files is not None else [],
+            path=path if path is not None else "",
+        )
 
     async def get_file(
         self,
         model: MediaGetFile,
     ) -> MediaFile:
         """Get files"""
-        self._logger.info("Getting file: %s", model.json())
+        self._logger.info("Getting file: %s", model)
         response = await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_GET_FILE,
-                    **model.dict(),
-                }
-            )
+            TYPE_GET_FILE,
+            asdict(model),
         )
-        return MediaFile(**response.dict())
+        return MediaFile(**response.data)
 
     async def register_data_listener(
         self,
         model: RegisterDataListener,
     ) -> Response:
         """Register data listener"""
-        self._logger.info("Registering data listener: %s", model.json())
+        self._logger.info("Registering data listener: %s", model)
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_REGISTER_DATA_LISTENER,
-                    **model.dict(),
-                }
-            )
+            TYPE_REGISTER_DATA_LISTENER,
+            asdict(model),
         )
 
     async def keyboard_keypress(
@@ -267,14 +255,10 @@ class WebSocketClient(Base):
         model: KeyboardKey,
     ) -> Response:
         """Keyboard keypress"""
-        self._logger.info("Press key: %s", model.json())
+        self._logger.info("Press key: %s", model)
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_KEYBOARD_KEYPRESS,
-                    **model.dict(),
-                }
-            )
+            TYPE_KEYBOARD_KEYPRESS,
+            asdict(model),
         )
 
     async def keyboard_text(
@@ -282,14 +266,10 @@ class WebSocketClient(Base):
         model: KeyboardText,
     ) -> Response:
         """Keyboard keypress"""
-        self._logger.info("Enter text: %s", model.json())
+        self._logger.info("Enter text: %s", model)
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_KEYBOARD_TEXT,
-                    **model.dict(),
-                }
-            )
+            TYPE_KEYBOARD_TEXT,
+            asdict(model),
         )
 
     async def media_control(
@@ -297,14 +277,10 @@ class WebSocketClient(Base):
         model: MediaControl,
     ) -> Response:
         """Media control"""
-        self._logger.info("Media control: %s", model.json())
+        self._logger.info("Media control: %s", model)
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_MEDIA_CONTROL,
-                    **model.dict(),
-                }
-            )
+            TYPE_MEDIA_CONTROL,
+            asdict(model),
         )
 
     async def send_notification(
@@ -312,14 +288,10 @@ class WebSocketClient(Base):
         model: Notification,
     ) -> Response:
         """Send notification"""
-        self._logger.info("Send notification: %s", model.json())
+        self._logger.info("Send notification: %s", model)
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_NOTIFICATION,
-                    **model.dict(),
-                }
-            )
+            TYPE_NOTIFICATION,
+            asdict(model),
         )
 
     async def open_path(
@@ -327,14 +299,10 @@ class WebSocketClient(Base):
         model: OpenPath,
     ) -> Response:
         """Open path"""
-        self._logger.info("Opening path: %s", model.json())
+        self._logger.info("Opening path: %s", model)
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_OPEN,
-                    **model.dict(),
-                }
-            )
+            TYPE_OPEN,
+            asdict(model),
         )
 
     async def open_url(
@@ -342,80 +310,58 @@ class WebSocketClient(Base):
         model: OpenUrl,
     ) -> Response:
         """Open url"""
-        self._logger.info("Opening URL: %s", model.json())
+        self._logger.info("Opening URL: %s", model)
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_OPEN,
-                    **model.dict(),
-                }
-            )
+            TYPE_OPEN,
+            asdict(model),
         )
 
     async def power_sleep(self) -> Response:
         """Power sleep"""
         self._logger.info("Power sleep")
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_POWER_SLEEP,
-                }
-            )
+            TYPE_POWER_SLEEP,
+            {},
         )
 
     async def power_hibernate(self) -> Response:
         """Power hibernate"""
         self._logger.info("Power hibernate")
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_POWER_HIBERNATE,
-                }
-            )
+            TYPE_POWER_HIBERNATE,
+            {},
         )
 
     async def power_restart(self) -> Response:
         """Power restart"""
         self._logger.info("Power restart")
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_POWER_RESTART,
-                }
-            )
+            TYPE_POWER_RESTART,
+            {},
         )
 
     async def power_shutdown(self) -> Response:
         """Power shutdown"""
         self._logger.info("Power shutdown")
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_POWER_SHUTDOWN,
-                }
-            )
+            TYPE_POWER_SHUTDOWN,
+            {},
         )
 
     async def power_lock(self) -> Response:
         """Power lock"""
         self._logger.info("Power lock")
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_POWER_LOCK,
-                }
-            )
+            TYPE_POWER_LOCK,
+            {},
         )
 
     async def power_logout(self) -> Response:
         """Power logout"""
         self._logger.info("Power logout")
         return await self._send_message(
-            Request(
-                **{
-                    EVENT_EVENT: TYPE_POWER_LOGOUT,
-                }
-            )
+            TYPE_POWER_LOGOUT,
+            {},
         )
 
     async def listen(
@@ -459,18 +405,7 @@ class WebSocketClient(Base):
                             else:
                                 response.data = model(**message[EVENT_DATA])
 
-                        self._logger.info(
-                            "Response: %s",
-                            response.json(
-                                include={
-                                    EVENT_ID,
-                                    EVENT_TYPE,
-                                    EVENT_SUBTYPE,
-                                    EVENT_MESSAGE,
-                                },
-                                exclude_unset=True,
-                            ),
-                        )
+                        self._logger.info("Response: %s", response)
 
                         try:
                             future.set_result(response)

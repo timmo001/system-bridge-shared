@@ -12,11 +12,11 @@ from appdirs import AppDirs
 
 def get_user_data_directory() -> str:
     """Get the user data directory"""
-    user_data_dir = AppDirs("systembridge", "timmo001").user_data_dir
+    directory = AppDirs("systembridge", "timmo001").user_data_dir
     # Create User Data Directories
-    if not os.path.exists(user_data_dir):
-        os.makedirs(user_data_dir, exist_ok=True)
-    return user_data_dir
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+    return directory
 
 
 def camel_to_snake(name):
