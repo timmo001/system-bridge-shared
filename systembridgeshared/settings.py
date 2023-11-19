@@ -38,7 +38,7 @@ class Settings(Base):
         if exists(self.settings_path):
             with open(self.settings_path, encoding="utf-8") as file:
                 self._settings = SettingsModel(loads(file.read()))
-        if not self._settings:
+        if self._settings is None:
             self._settings = SettingsModel()
             self._save()
 

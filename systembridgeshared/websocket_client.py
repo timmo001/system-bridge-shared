@@ -35,8 +35,6 @@ from .const import (
     EVENT_MODULE,
     EVENT_SUBTYPE,
     EVENT_TYPE,
-    SECRET_TOKEN,
-    SETTING_PORT_API,
     SUBTYPE_BAD_TOKEN,
     SUBTYPE_LISTENER_ALREADY_REGISTERED,
     TYPE_APPLICATION_UPDATE,
@@ -82,7 +80,6 @@ class WebSocketClient(Base):
         self._responses: dict[str, tuple[asyncio.Future[Response], str | None]] = {}
         self._session: aiohttp.ClientSession | None = None
         self._websocket: aiohttp.ClientWebSocketResponse | None = None
-        self._token = self._settings.get_secret(SECRET_TOKEN)
 
     @property
     def connected(self) -> bool:
@@ -101,7 +98,7 @@ class WebSocketClient(Base):
             raise ConnectionClosedException("Connection is closed")
 
         request = Request(
-            token=self._token,
+            token=self._settings.data.api.token,
             id=uuid4().hex,
             event=event,
             data=data,
@@ -145,7 +142,7 @@ class WebSocketClient(Base):
         else:
             self._logger.info("Creating new aiohttp client session")
             self._session = aiohttp.ClientSession()
-        url = f"ws://localhost:{self._settings.get(SETTING_PORT_API)}/api/websocket"
+        url = f"ws://localhost:{self._settings.data.api.port}/api/websocket"
         self._logger.info(
             "Connecting to WebSocket: %s (aiohttp: %s)",
             url,
