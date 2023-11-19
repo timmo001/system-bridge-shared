@@ -59,15 +59,15 @@ class Settings(Base):
             )
         if settings is None:
             settings = SettingsModel()
-            self._save()
+            self._save(settings)
 
         self._settings: SettingsModel = settings
 
-    def _save(self) -> None:
+    def _save(self, settings) -> None:
         """Save settings to file"""
         with open(self.settings_path, "w", encoding="utf-8") as file:
             # TODO: Encrypt settings
-            file.write(dumps(asdict(self._settings)))
+            file.write(dumps(asdict(settings)))
 
     @property
     def data(self) -> SettingsModel:
@@ -84,4 +84,4 @@ class Settings(Base):
     def update(self, key: str, value: Any) -> None:
         """Update setting"""
         setattr(self._settings, key, value)
-        self._save()
+        self._save(self._settings)
