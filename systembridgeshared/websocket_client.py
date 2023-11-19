@@ -76,7 +76,7 @@ class WebSocketClient(Base):
         self,
         settings: Settings,
     ) -> None:
-        """Initialize"""
+        """Initialise"""
         super().__init__()
         self._settings = settings
         self._responses: dict[str, tuple[asyncio.Future[Response], str | None]] = {}

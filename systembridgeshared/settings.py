@@ -32,7 +32,7 @@ class Settings(Base):
         self,
         database: Database,
     ) -> None:
-        """Initialize"""
+        """Initialise"""
         super().__init__()
         self._database = database
 
