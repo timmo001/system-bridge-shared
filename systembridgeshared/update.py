@@ -1,4 +1,4 @@
-"""System Bridge: Update"""
+"""Update"""
 from __future__ import annotations
 
 import importlib.util
