@@ -1,4 +1,4 @@
-"""System Bridge Shared: Base"""
+"""Base"""
 import logging
 
 

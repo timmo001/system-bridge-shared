@@ -1,4 +1,4 @@
-"""System Bridge Shared: Common"""
+"""Common"""
 from __future__ import annotations
 
 import asyncio

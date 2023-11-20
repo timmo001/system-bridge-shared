@@ -1,4 +1,4 @@
-"""System Bridge Shared: Logger"""
+"""Logger"""
 import logging
 import os
 from logging.handlers import RotatingFileHandler

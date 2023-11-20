@@ -1,4 +1,4 @@
-"""System Bridge Shared: Exceptions"""
+"""Exceptions"""
 
 
 class ApplicationExitException(BaseException):
