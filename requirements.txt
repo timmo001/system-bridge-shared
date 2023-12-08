@@ -4,6 +4,6 @@ appdirs==1.4.4
 colorlog==6.8.0
 cryptography==41.0.7
 incremental==22.10.0
-pandas==2.1.3
+pandas==2.1.4
 sqlmodel==0.0.12
 systembridgemodels>=3.10.3
