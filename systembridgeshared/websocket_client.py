@@ -66,6 +66,7 @@ from .exceptions import (
 from .settings import Settings
 
 
+# TODO: Merge with connector and use that instead
 class WebSocketClient(Base):
     """WebSocket Client."""
 
