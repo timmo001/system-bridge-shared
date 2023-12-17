@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import asyncio
-import socket
 from collections.abc import Awaitable, Callable
 from dataclasses import asdict
+import socket
 from typing import Any
 from uuid import uuid4
 
