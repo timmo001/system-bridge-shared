@@ -1,40 +1,31 @@
-"""System Bridge: Settings"""
+"""Settings."""
 from __future__ import annotations
 
+from dataclasses import asdict
+from json import dumps, loads
 import os
 from os.path import exists
 from typing import Any
-from uuid import uuid4
 
 from appdirs import AppDirs
 from cryptography.fernet import Fernet
-from systembridgeshared.models.database_data import Data as DatabaseData
-from systembridgeshared.models.database_data import Secrets as DatabaseSecrets
-from systembridgeshared.models.database_data import Settings as DatabaseSettings
+from systembridgemodels.settings import (
+    SettingDirectory,
+    SettingHotkey,
+    Settings as SettingsModel,
+    SettingsAPI,
+    SettingsMedia,
+)
 
 from .base import Base
-from .common import convert_string_to_correct_type
-from .const import (
-    SECRET_API_KEY,
-    SETTING_ADDITIONAL_MEDIA_DIRECTORIES,
-    SETTING_AUTOSTART,
-    SETTING_KEYBOARD_HOTKEYS,
-    SETTING_LOG_LEVEL,
-    SETTING_PORT_API,
-)
-from .database import Database
 
 
 class Settings(Base):
-    """Settings"""
+    """Settings."""
 
-    def __init__(
-        self,
-        database: Database,
-    ) -> None:
-        """Initialize"""
+    def __init__(self) -> None:
+        """Initialise."""
         super().__init__()
-        self._database = database
 
         # Generate default encryption key
         self._encryption_key: str = ""
@@ -49,98 +40,58 @@ class Settings(Base):
             with open(secret_key_path, "w", encoding="utf-8") as file:
                 file.write(self._encryption_key)
 
-        # Default Secrets
-        if self._database.get_data_item_by_key(DatabaseSecrets, SECRET_API_KEY) is None:
-            self.set_secret(SECRET_API_KEY, str(uuid4()))
+        # Create or read settings file
+        settings: SettingsModel | None = None
+        try:
+            if exists(self.settings_path):
+                with open(self.settings_path, encoding="utf-8") as file:
+                    settings_dict = loads(file.read())
+                settings = self._parse_settings(settings_dict)
+        except Exception as error:  # pylint: disable=broad-except
+            self._logger.error("Failed to read settings file.", exc_info=error)
 
-        # Default Settings
-        if (
-            self._database.get_data_item_by_key(DatabaseSettings, SETTING_AUTOSTART)
-            is None
-        ):
-            self.set(SETTING_AUTOSTART, str(False))
-        if (
-            self._database.get_data_item_by_key(DatabaseSettings, SETTING_LOG_LEVEL)
-            is None
-        ):
-            self.set(SETTING_LOG_LEVEL, "INFO")
-        if (
-            self._database.get_data_item_by_key(DatabaseSettings, SETTING_PORT_API)
-            is None
-        ):
-            self.set(SETTING_PORT_API, str(9170))
-        if (
-            self._database.get_data_item_by_key(
-                DatabaseSettings, SETTING_ADDITIONAL_MEDIA_DIRECTORIES
-            )
-            is None
-        ):
-            self.set(SETTING_ADDITIONAL_MEDIA_DIRECTORIES, str([]))
-        if (
-            self._database.get_data_item_by_key(
-                DatabaseSettings, SETTING_KEYBOARD_HOTKEYS
-            )
-            is None
-        ):
-            self.set(SETTING_KEYBOARD_HOTKEYS, str([]))
+        if settings is None:
+            settings = SettingsModel()
+            self._save(settings)
 
-    def get_all(self) -> list[DatabaseData]:
-        """Get settings"""
-        records = self._database.get_data(DatabaseSettings)
-        for record in records:
-            if record.value is not None:
-                record.value = convert_string_to_correct_type(record.value)
-        return records
+        self._settings: SettingsModel = settings
 
-    def get(
-        self,
-        key: str,
-    ) -> bool | float | int | str | list[Any] | dict[str, Any] | None:
-        """Get setting"""
-        record = self._database.get_data_item_by_key(DatabaseSettings, key)
-        if record is None or record.value is None:
-            return None
-        return convert_string_to_correct_type(record.value)
-
-    def get_secret(
-        self,
-        key: str,
-    ) -> str:
-        """Get secret"""
-        record = self._database.get_data_item_by_key(DatabaseSecrets, key)
-        if record is None or record.value is None:
-            raise KeyError(f"Secret {key} not found")
-
-        secret = record.value
-        fernet = Fernet(self._encryption_key)
-        return fernet.decrypt(secret.encode()).decode()
-
-    def set(
-        self,
-        key: str,
-        value: str,
-    ) -> None:
-        """Set setting"""
-        self._database.update_data(
-            DatabaseSettings,
-            DatabaseSettings(
-                key=key,
-                value=value,
+    def _parse_settings(self, settings_dict: dict[str, Any]) -> SettingsModel:
+        """Parse settings."""
+        return SettingsModel(
+            api=SettingsAPI(**settings_dict["api"]),
+            autostart=settings_dict["autostart"],
+            keyboard_hotkeys=[
+                SettingHotkey(**hotkey) for hotkey in settings_dict["keyboard_hotkeys"]
+            ],
+            log_level=settings_dict["log_level"],
+            media=SettingsMedia(
+                directories=[
+                    SettingDirectory(**directory)
+                    for directory in settings_dict["media"]["directories"]
+                ]
             ),
         )
 
-    def set_secret(
-        self,
-        key: str,
-        value: str,
-    ) -> None:
-        """Set secret"""
-        fernet = Fernet(self._encryption_key)
+    def _save(self, settings: SettingsModel) -> None:
+        """Save settings to file."""
+        with open(self.settings_path, "w", encoding="utf-8") as file:
+            # TODO: Encrypt settings
+            file.write(dumps(asdict(settings)))
 
-        self._database.update_data(
-            DatabaseSecrets,
-            DatabaseSecrets(
-                key=key,
-                value=fernet.encrypt(value.encode()).decode(),
-            ),
+    @property
+    def data(self) -> SettingsModel:
+        """Return settings."""
+        return self._settings
+
+    @property
+    def settings_path(self) -> str:
+        """Return settings path."""
+        return os.path.join(
+            AppDirs("systembridge", "timmo001").user_data_dir, "settings.json"
         )
+
+    def update(self, settings_dict: dict[str, Any]) -> None:
+        """Update settings."""
+        self._settings = self._parse_settings(settings_dict)
+        self._save(self._settings)

@@ -1,1 +1,1 @@
-"""System Bridge Shared"""
+"""System Bridge Shared."""
