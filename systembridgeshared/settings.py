@@ -38,10 +38,14 @@ class Settings(Base):
 
         # Create or read settings file
         settings: SettingsModel | None = None
-        if exists(self.settings_path):
-            with open(self.settings_path, encoding="utf-8") as file:
-                settings_dict = loads(file.read())
-            settings = self._parse_settings(settings_dict)
+        try:
+            if exists(self.settings_path):
+                with open(self.settings_path, encoding="utf-8") as file:
+                    settings_dict = loads(file.read())
+                settings = self._parse_settings(settings_dict)
+        except Exception as error:  # pylint: disable=broad-except
+            self._logger.error("Failed to read settings file.", exc_info=error)
+
         if settings is None:
             settings = SettingsModel()
             self._save(settings)
