@@ -1,11 +1,10 @@
-"""WebSocket Client"""
+"""WebSocket Client."""
 from __future__ import annotations
 
 import asyncio
 import socket
 from collections.abc import Awaitable, Callable
 from dataclasses import asdict
-from json import dumps
 from typing import Any
 from uuid import uuid4
 
@@ -15,7 +14,7 @@ from systembridgemodels.get_data import GetData
 from systembridgemodels.keyboard_key import KeyboardKey
 from systembridgemodels.keyboard_text import KeyboardText
 from systembridgemodels.media_control import MediaControl
-from systembridgemodels.media_directories import MediaDirectories
+from systembridgemodels.media_directories import Directory, MediaDirectories
 from systembridgemodels.media_files import MediaFile, MediaFiles
 from systembridgemodels.media_get_file import MediaGetFile
 from systembridgemodels.media_get_files import MediaGetFiles
@@ -68,13 +67,13 @@ from .settings import Settings
 
 
 class WebSocketClient(Base):
-    """WebSocket Client"""
+    """WebSocket Client."""
 
     def __init__(
         self,
         settings: Settings,
     ) -> None:
-        """Initialise"""
+        """Initialise."""
         super().__init__()
         self._settings = settings
         self._responses: dict[str, tuple[asyncio.Future[Response], str | None]] = {}
@@ -93,7 +92,7 @@ class WebSocketClient(Base):
         wait_for_response: bool = True,
         response_type: str | None = None,
     ) -> Response:
-        """Send a message to the WebSocket"""
+        """Send a message to the WebSocket."""
         if not self.connected or self._websocket is None:
             raise ConnectionClosedException("Connection is closed")
 
@@ -106,8 +105,8 @@ class WebSocketClient(Base):
 
         future: asyncio.Future[Response] = asyncio.get_running_loop().create_future()
         self._responses[request.id] = future, response_type
-        ws_data = dumps(asdict(request))
-        await self._websocket.send_str(ws_data)
+        ws_data = asdict(request)
+        await self._websocket.send_json(ws_data)
         self._logger.debug("Sent message: %s", ws_data)
 
         if wait_for_response:
@@ -125,7 +124,7 @@ class WebSocketClient(Base):
         )
 
     async def close(self) -> None:
-        """Close connection"""
+        """Close connection."""
         self._logger.info("Closing WebSocket connection")
         if self._websocket is not None:
             await self._websocket.close()
@@ -136,7 +135,7 @@ class WebSocketClient(Base):
         self,
         session: aiohttp.ClientSession | None = None,
     ) -> None:
-        """Connect to server"""
+        """Connect to server."""
         if session:
             self._session = session
         else:
@@ -167,7 +166,7 @@ class WebSocketClient(Base):
         self,
         model: Update,
     ) -> Response:
-        """Update application"""
+        """Update application."""
         self._logger.info("Updating application")
         return await self._send_message(
             TYPE_APPLICATION_UPDATE,
@@ -176,7 +175,7 @@ class WebSocketClient(Base):
         )
 
     async def exit_backend(self) -> Response:
-        """Exit backend"""
+        """Exit backend."""
         self._logger.info("Exiting backend")
         return await self._send_message(
             TYPE_EXIT_APPLICATION,
@@ -188,7 +187,7 @@ class WebSocketClient(Base):
         self,
         model: GetData,
     ) -> Response:
-        """Get data from server"""
+        """Get data from server."""
         self._logger.info("Getting data from server: %s", model)
         return await self._send_message(
             TYPE_GET_DATA,
@@ -197,28 +196,33 @@ class WebSocketClient(Base):
         )
 
     async def get_directories(self) -> MediaDirectories:
-        """Get directories"""
+        """Get directories."""
         self._logger.info("Getting directories..")
         response = await self._send_message(
             TYPE_GET_DIRECTORIES,
             {},
         )
-        # return MediaDirectories(**response.dict())
-        return MediaDirectories(*response.data)
+        return [
+            Directory(
+                key=getattr(directory, "key"),
+                path=getattr(directory, "path"),
+            )
+            for directory in response.data
+        ]
 
     async def get_files(
         self,
         model: MediaGetFiles,
     ) -> MediaFiles:
-        """Get files"""
+        """Get files."""
         self._logger.info("Getting files: %s", model)
         response = await self._send_message(
             TYPE_GET_FILES,
             asdict(model),
         )
 
-        files = response.data.get("files")
-        path = response.data.get("path")
+        files = getattr(response.data, "files")
+        path = getattr(response.data, "path")
         return MediaFiles(
             files=files if files is not None else [],
             path=path if path is not None else "",
@@ -228,19 +232,31 @@ class WebSocketClient(Base):
         self,
         model: MediaGetFile,
     ) -> MediaFile:
-        """Get files"""
+        """Get files."""
         self._logger.info("Getting file: %s", model)
         response = await self._send_message(
             TYPE_GET_FILE,
             asdict(model),
         )
-        return MediaFile(**response.data)
+        return MediaFile(
+            name=getattr(response.data, "name"),
+            path=getattr(response.data, "path"),
+            fullpath=getattr(response.data, "fullpath"),
+            size=getattr(response.data, "size"),
+            last_accessed=getattr(response.data, "last_accessed"),
+            created=getattr(response.data, "created"),
+            modified=getattr(response.data, "modified"),
+            is_directory=getattr(response.data, "is_directory"),
+            is_file=getattr(response.data, "is_file"),
+            is_link=getattr(response.data, "is_link"),
+            mime_type=getattr(response.data, "mime_type"),
+        )
 
     async def register_data_listener(
         self,
         model: RegisterDataListener,
     ) -> Response:
-        """Register data listener"""
+        """Register data listener."""
         self._logger.info("Registering data listener: %s", model)
         return await self._send_message(
             TYPE_REGISTER_DATA_LISTENER,
@@ -251,7 +267,7 @@ class WebSocketClient(Base):
         self,
         model: KeyboardKey,
     ) -> Response:
-        """Keyboard keypress"""
+        """Keyboard keypress."""
         self._logger.info("Press key: %s", model)
         return await self._send_message(
             TYPE_KEYBOARD_KEYPRESS,
@@ -262,7 +278,7 @@ class WebSocketClient(Base):
         self,
         model: KeyboardText,
     ) -> Response:
-        """Keyboard keypress"""
+        """Keyboard keypress."""
         self._logger.info("Enter text: %s", model)
         return await self._send_message(
             TYPE_KEYBOARD_TEXT,
@@ -273,7 +289,7 @@ class WebSocketClient(Base):
         self,
         model: MediaControl,
     ) -> Response:
-        """Media control"""
+        """Media control."""
         self._logger.info("Media control: %s", model)
         return await self._send_message(
             TYPE_MEDIA_CONTROL,
@@ -284,7 +300,7 @@ class WebSocketClient(Base):
         self,
         model: Notification,
     ) -> Response:
-        """Send notification"""
+        """Send notification."""
         self._logger.info("Send notification: %s", model)
         return await self._send_message(
             TYPE_NOTIFICATION,
@@ -295,7 +311,7 @@ class WebSocketClient(Base):
         self,
         model: OpenPath,
     ) -> Response:
-        """Open path"""
+        """Open path."""
         self._logger.info("Opening path: %s", model)
         return await self._send_message(
             TYPE_OPEN,
@@ -306,7 +322,7 @@ class WebSocketClient(Base):
         self,
         model: OpenUrl,
     ) -> Response:
-        """Open url"""
+        """Open url."""
         self._logger.info("Opening URL: %s", model)
         return await self._send_message(
             TYPE_OPEN,
@@ -314,7 +330,7 @@ class WebSocketClient(Base):
         )
 
     async def power_sleep(self) -> Response:
-        """Power sleep"""
+        """Power sleep."""
         self._logger.info("Power sleep")
         return await self._send_message(
             TYPE_POWER_SLEEP,
@@ -322,7 +338,7 @@ class WebSocketClient(Base):
         )
 
     async def power_hibernate(self) -> Response:
-        """Power hibernate"""
+        """Power hibernate."""
         self._logger.info("Power hibernate")
         return await self._send_message(
             TYPE_POWER_HIBERNATE,
@@ -330,7 +346,7 @@ class WebSocketClient(Base):
         )
 
     async def power_restart(self) -> Response:
-        """Power restart"""
+        """Power restart."""
         self._logger.info("Power restart")
         return await self._send_message(
             TYPE_POWER_RESTART,
@@ -338,7 +354,7 @@ class WebSocketClient(Base):
         )
 
     async def power_shutdown(self) -> Response:
-        """Power shutdown"""
+        """Power shutdown."""
         self._logger.info("Power shutdown")
         return await self._send_message(
             TYPE_POWER_SHUTDOWN,
@@ -346,7 +362,7 @@ class WebSocketClient(Base):
         )
 
     async def power_lock(self) -> Response:
-        """Power lock"""
+        """Power lock."""
         self._logger.info("Power lock")
         return await self._send_message(
             TYPE_POWER_LOCK,
@@ -354,7 +370,7 @@ class WebSocketClient(Base):
         )
 
     async def power_logout(self) -> Response:
-        """Power logout"""
+        """Power logout."""
         self._logger.info("Power logout")
         return await self._send_message(
             TYPE_POWER_LOGOUT,
@@ -366,10 +382,10 @@ class WebSocketClient(Base):
         callback: Callable[[str, Any], Awaitable[None]] | None = None,
         accept_other_types: bool = False,
     ) -> None:
-        """Listen for messages and map to modules"""
+        """Listen for messages and map to modules."""
 
         async def _callback_message(message: dict) -> None:
-            """Message Callback"""
+            """Message Callback."""
             self._logger.debug("New message: %s", message[EVENT_TYPE])
 
             if message.get(EVENT_ID) is not None:
@@ -427,12 +443,11 @@ class WebSocketClient(Base):
                 model = MODEL_MAP.get(message[EVENT_MODULE])
                 if model is None:
                     self._logger.warning("Unknown model: %s", message[EVENT_MODULE])
-                else:
-                    if callback is not None:
-                        await callback(
-                            message[EVENT_MODULE],
-                            model(**message[EVENT_DATA]),
-                        )
+                elif callback is not None:
+                    await callback(
+                        message[EVENT_MODULE],
+                        model(**message[EVENT_DATA]),
+                    )
             else:
                 self._logger.debug("Other message: %s", message[EVENT_TYPE])
                 if accept_other_types:
@@ -449,7 +464,7 @@ class WebSocketClient(Base):
         self,
         callback: Callable,
     ) -> None:
-        """Listen for messages"""
+        """Listen for messages."""
         if not self.connected:
             raise ConnectionClosedException("Connection is closed")
 
@@ -461,7 +476,7 @@ class WebSocketClient(Base):
                     await callback(message)
 
     async def receive_message(self) -> dict | None:
-        """Receive message"""
+        """Receive message."""
         if not self.connected or self._websocket is None:
             raise ConnectionClosedException("Connection is closed")
 
