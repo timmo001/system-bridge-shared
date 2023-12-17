@@ -1,4 +1,4 @@
-"""Settings"""
+"""Settings."""
 from __future__ import annotations
 
 import os
@@ -17,10 +17,10 @@ from .base import Base
 
 
 class Settings(Base):
-    """Settings"""
+    """Settings."""
 
     def __init__(self) -> None:
-        """Initialise"""
+        """Initialise."""
         super().__init__()
 
         # Generate default encryption key
@@ -63,25 +63,25 @@ class Settings(Base):
 
         self._settings: SettingsModel = settings
 
-    def _save(self, settings) -> None:
-        """Save settings to file"""
+    def _save(self, settings: SettingsModel) -> None:
+        """Save settings to file."""
         with open(self.settings_path, "w", encoding="utf-8") as file:
             # TODO: Encrypt settings
             file.write(dumps(asdict(settings)))
 
     @property
     def data(self) -> SettingsModel:
-        """Return settings"""
+        """Return settings."""
         return self._settings
 
     @property
     def settings_path(self) -> str:
-        """Return settings path"""
+        """Return settings path."""
         return os.path.join(
             AppDirs("systembridge", "timmo001").user_data_dir, "settings.json"
         )
 
-    def update(self, key: str, value: Any) -> None:
-        """Update setting"""
-        setattr(self._settings, key, value)
+    def update(self, settings: SettingsModel) -> None:
+        """Update settings."""
+        self._settings = settings
         self._save(self._settings)
