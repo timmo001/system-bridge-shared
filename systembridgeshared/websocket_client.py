@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import asyncio
+import socket
 from collections.abc import Awaitable, Callable
 from dataclasses import asdict
-import socket
 from typing import Any
 from uuid import uuid4
 
@@ -105,9 +105,8 @@ class WebSocketClient(Base):
 
         future: asyncio.Future[Response] = asyncio.get_running_loop().create_future()
         self._responses[request.id] = future, response_type
-        ws_data = asdict(request)
-        await self._websocket.send_json(ws_data)
-        self._logger.debug("Sent message: %s", ws_data)
+        await self._websocket.send_json(request)
+        self._logger.debug("Sent message: %s", request)
 
         if wait_for_response:
             try:
