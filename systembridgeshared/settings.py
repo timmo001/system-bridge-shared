@@ -41,27 +41,29 @@ class Settings(Base):
         if exists(self.settings_path):
             with open(self.settings_path, encoding="utf-8") as file:
                 settings_dict = loads(file.read())
-
-            settings = SettingsModel(
-                api=SettingsAPI(**settings_dict["api"]),
-                autostart=settings_dict["autostart"],
-                keyboard_hotkeys=[
-                    SettingHotkey(**hotkey)
-                    for hotkey in settings_dict["keyboard_hotkeys"]
-                ],
-                log_level=settings_dict["log_level"],
-                media=SettingsMedia(
-                    directories=[
-                        SettingDirectory(**directory)
-                        for directory in settings_dict["media"]["directories"]
-                    ]
-                ),
-            )
+            settings = self._parse_settings(settings_dict)
         if settings is None:
             settings = SettingsModel()
             self._save(settings)
 
         self._settings: SettingsModel = settings
+
+    def _parse_settings(self, settings_dict: dict[str, Any]) -> SettingsModel:
+        """Parse settings."""
+        return SettingsModel(
+            api=SettingsAPI(**settings_dict["api"]),
+            autostart=settings_dict["autostart"],
+            keyboard_hotkeys=[
+                SettingHotkey(**hotkey) for hotkey in settings_dict["keyboard_hotkeys"]
+            ],
+            log_level=settings_dict["log_level"],
+            media=SettingsMedia(
+                directories=[
+                    SettingDirectory(**directory)
+                    for directory in settings_dict["media"]["directories"]
+                ]
+            ),
+        )
 
     def _save(self, settings: SettingsModel) -> None:
         """Save settings to file."""
@@ -81,7 +83,7 @@ class Settings(Base):
             AppDirs("systembridge", "timmo001").user_data_dir, "settings.json"
         )
 
-    def update(self, settings: SettingsModel) -> None:
+    def update(self, settings_dict: dict[str, Any]) -> None:
         """Update settings."""
-        self._settings = settings
+        self._settings = self._parse_settings(settings_dict)
         self._save(self._settings)
