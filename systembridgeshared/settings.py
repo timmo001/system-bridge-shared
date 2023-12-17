@@ -1,17 +1,21 @@
 """Settings."""
 from __future__ import annotations
 
-import os
 from dataclasses import asdict
 from json import dumps, loads
+import os
 from os.path import exists
 from typing import Any
 
 from appdirs import AppDirs
 from cryptography.fernet import Fernet
-from systembridgemodels.settings import SettingDirectory, SettingHotkey
-from systembridgemodels.settings import Settings as SettingsModel
-from systembridgemodels.settings import SettingsAPI, SettingsMedia
+from systembridgemodels.settings import (
+    SettingDirectory,
+    SettingHotkey,
+    Settings as SettingsModel,
+    SettingsAPI,
+    SettingsMedia,
+)
 
 from .base import Base
 

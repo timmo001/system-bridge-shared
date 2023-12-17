@@ -1,4 +1,4 @@
-"""Logger"""
+"""Logger."""
 import logging
 import os
 from logging.handlers import RotatingFileHandler
@@ -13,7 +13,7 @@ def setup_logger(
     log_level: str,
     name: str,
 ) -> logging.Logger:
-    """Set up logging"""
+    """Set up logging."""
 
     logging.basicConfig(
         datefmt=DATE_FORMAT,

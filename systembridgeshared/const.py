@@ -1,4 +1,4 @@
-"""Constants"""
+"""Constants."""
 # Logging
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 FORMAT = "%(asctime)s %(levelname)s (%(threadName)s) [%(name)s] %(message)s"

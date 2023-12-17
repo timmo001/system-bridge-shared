@@ -1,4 +1,4 @@
-"""Common"""
+"""Common."""
 from __future__ import annotations
 
 import asyncio
@@ -11,7 +11,7 @@ from appdirs import AppDirs
 
 
 def get_user_data_directory() -> str:
-    """Get the user data directory"""
+    """Get the user data directory."""
     directory = AppDirs("systembridge", "timmo001").user_data_dir
     # Create User Data Directories
     if not os.path.exists(directory):
@@ -20,7 +20,7 @@ def get_user_data_directory() -> str:
 
 
 def camel_to_snake(name):
-    """Convert camel case to snake case"""
+    """Convert camel case to snake case."""
     name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", name).lower()
 
@@ -28,7 +28,7 @@ def camel_to_snake(name):
 def convert_string_to_correct_type(
     value: str | None,
 ) -> bool | float | int | str | list[Any] | dict[str, Any] | None:
-    """Convert string to correct data type"""
+    """Convert string to correct data type."""
     if value is None:
         return None
     try:
@@ -58,7 +58,7 @@ def convert_string_to_correct_type(
 
 
 def make_key(key_input: str) -> str:
-    """Make a key from a string"""
+    """Make a key from a string."""
     return (
         key_input.replace(" ", "_", -1)
         .replace("(", "", -1)
@@ -70,7 +70,7 @@ def make_key(key_input: str) -> str:
 
 
 def asyncio_get_loop() -> asyncio.AbstractEventLoop:
-    """Get the event loop"""
+    """Get the event loop."""
     try:
         loop = asyncio.get_event_loop()
         if not loop.is_running():

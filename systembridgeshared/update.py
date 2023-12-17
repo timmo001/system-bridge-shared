@@ -1,20 +1,20 @@
-"""Update"""
+"""Update."""
 from __future__ import annotations
 
 import importlib.util
+from json import loads
 import os
 import platform
 import subprocess
 import sys
 import urllib.request
-from json import loads
 
 from .base import Base
 from .common import asyncio_get_loop
 
 
 class Update(Base):
-    """Update"""
+    """Update."""
 
     def _install_package(
         self,
