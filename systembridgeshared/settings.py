@@ -29,9 +29,13 @@ class Settings(Base):
 
         # Generate default encryption key
         self._encryption_key: str = ""
-        secret_key_path = os.path.join(
-            AppDirs("systembridge", "timmo001").user_data_dir, "secret.key"
-        )
+        secret_key_dir: str = AppDirs("systembridge", "timmo001").user_data_dir
+
+        # Create secret key directory if it doesn't exist
+        if not exists(secret_key_dir):
+            os.makedirs(secret_key_dir)
+
+        secret_key_path = os.path.join(secret_key_dir, "secret.key")
         if exists(secret_key_path):
             with open(secret_key_path, encoding="utf-8") as file:
                 self._encryption_key = file.read().splitlines()[0]
