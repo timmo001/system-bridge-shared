@@ -1,7 +1,7 @@
 """Logger."""
 import logging
-import os
 from logging.handlers import RotatingFileHandler
+import os
 
 from colorlog import ColoredFormatter
 
