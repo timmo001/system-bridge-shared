@@ -9,6 +9,7 @@ from typing import Any
 
 from appdirs import AppDirs
 from cryptography.fernet import Fernet
+
 from systembridgemodels.settings import (
     SettingDirectory,
     SettingHotkey,
