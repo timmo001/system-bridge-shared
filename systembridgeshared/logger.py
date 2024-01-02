@@ -1,4 +1,5 @@
 """Logger."""
+import contextlib
 import logging
 from logging.handlers import RotatingFileHandler
 import os
@@ -40,10 +41,7 @@ def setup_logger(
         os.path.join(get_user_data_directory(), f"{name}.log"),
         backupCount=1,
     )
-    try:
-        file_handler.doRollover()
-    except PermissionError:
-        pass
+    contextlib.suppress(PermissionError)
     file_handler.setLevel(log_level)
     file_handler.setFormatter(logging.Formatter(FORMAT, datefmt=DATE_FORMAT))
 
