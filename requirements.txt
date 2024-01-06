@@ -4,4 +4,4 @@ appdirs==1.4.4
 colorlog==6.8.0
 cryptography==41.0.7
 incremental==22.10.0
-systembridgemodels>=4.0.0.dev14
+systembridgemodels>=4.0.0.dev15
