@@ -2,6 +2,6 @@ aiohttp==3.8.6;python_version<'3.12'
 aiohttp==3.9.3;python_version>='3.12'
 appdirs==1.4.4
 colorlog==6.8.2
-cryptography==42.0.2
+cryptography==42.0.3
 incremental==22.10.0
 systembridgemodels>=4.0.0
