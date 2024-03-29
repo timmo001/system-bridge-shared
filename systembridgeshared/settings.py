@@ -7,7 +7,6 @@ import os
 from os.path import exists
 from typing import Any
 
-from appdirs import AppDirs
 from cryptography.fernet import Fernet
 
 from systembridgemodels.settings import (
@@ -19,6 +18,7 @@ from systembridgemodels.settings import (
 )
 
 from .base import Base
+from .common import get_user_data_directory
 
 
 class Settings(Base):
@@ -30,7 +30,8 @@ class Settings(Base):
 
         # Generate default encryption key
         self._encryption_key: str = ""
-        secret_key_dir: str = AppDirs("systembridge", "timmo001").user_data_dir
+
+        secret_key_dir: str = get_user_data_directory()
 
         # Create secret key directory if it doesn't exist
         if not exists(secret_key_dir):
@@ -92,9 +93,7 @@ class Settings(Base):
     @property
     def settings_path(self) -> str:
         """Return settings path."""
-        return os.path.join(
-            AppDirs("systembridge", "timmo001").user_data_dir, "settings.json"
-        )
+        return os.path.join(get_user_data_directory(), "settings.json")
 
     def update(self, settings_dict: dict[str, Any]) -> None:
         """Update settings."""

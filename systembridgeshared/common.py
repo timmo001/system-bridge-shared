@@ -5,14 +5,20 @@ import asyncio
 import json
 import os
 import re
+import sys
 from typing import Any
-
-from appdirs import AppDirs
 
 
 def get_user_data_directory() -> str:
     """Get the user data directory."""
-    directory = AppDirs("systembridge", "timmo001").user_data_dir
+    base_path: str = ""
+    if sys.platform == "win32":
+        base_path = os.getenv("LOCALAPPDATA", os.path.expanduser("~/AppData/Local"))
+    else:
+        base_path = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
+
+    directory = os.path.join(base_path, "timmo001", "systembridge")
+
     # Create User Data Directories
     if not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
