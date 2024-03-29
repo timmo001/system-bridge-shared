@@ -15,7 +15,7 @@ def get_user_data_directory() -> str:
     if sys.platform == "win32":
         base_path = os.getenv("LOCALAPPDATA", os.path.expanduser("~/AppData/Local"))
     else:
-        base_path = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
+        base_path = os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
 
     directory = os.path.join(base_path, "timmo001", "systembridge")
 
