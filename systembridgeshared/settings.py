@@ -1,5 +1,4 @@
 """Settings."""
-from __future__ import annotations
 
 from dataclasses import asdict
 from json import dumps, loads

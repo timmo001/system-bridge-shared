@@ -1,4 +1,5 @@
 """Logger."""
+
 import contextlib
 import logging
 from logging.handlers import RotatingFileHandler
@@ -7,7 +8,9 @@ import os
 from colorlog import ColoredFormatter
 
 from .common import get_user_data_directory
-from .const import DATE_FORMAT, FORMAT
+
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+FORMAT = "%(asctime)s %(levelname)s (%(threadName)s) [%(name)s] %(message)s"
 
 
 def setup_logger(
