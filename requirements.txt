@@ -2,5 +2,5 @@ aiohttp==3.8.6;python_version<'3.12'
 aiohttp==3.9.5;python_version>='3.12'
 colorlog==6.8.2
 cryptography==43.0.0
-incremental==22.10.0
+incremental==24.7.0
 systembridgemodels>=4.0.4
