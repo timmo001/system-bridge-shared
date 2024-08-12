@@ -43,6 +43,7 @@ def setup_logger(
     file_handler = RotatingFileHandler(
         os.path.join(get_user_data_directory(), f"{name}.log"),
         backupCount=1,
+        maxBytes=1024 * 1024 * 10,  # 10MB
     )
     contextlib.suppress(PermissionError)
     file_handler.setLevel(log_level)
