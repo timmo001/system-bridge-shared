@@ -1,5 +1,5 @@
 aiohttp==3.10.5
-colorlog==6.8.2
+colorlog==6.9.0
 cryptography==43.0.0
 incremental>=24.7.2
 systembridgemodels>=4.2.4
